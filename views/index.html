@@ -1,0 +1,79 @@
+{% extends 'base.html'%}
+
+
+{% block header %}
+    {% if question.qView == 'start' or question.qView == 'last' %}
+    {% else %}
+        <div class='greeting'>
+            <div class='greeting-text'>
+
+                {% if name[1] != false %}
+                    Добрый день, {{name[1]}} {{name[2]}}!
+                {% else %}
+                    Добрый день!
+                {% endif %}
+                Ваше участие очень важно! Пожалуйста, заполните анкету до конца.
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+
+
+{% block content %}
+
+
+        {% if question.qView == 'start' or question.qView == 'last' %}
+                {% include question.qView~'.html' %}
+        {% else %}
+        
+        <div class = 'qtext'>
+            <div class = "center-qtext">
+                <div class = 'number-and-arrow'>
+                    <span class = 'text-color'> {{question.qNum}} </span>
+                    <i class = 'fa fa-arrow-right text-color'></i>
+                </div>
+                <div class= 'text'> {{question.qText}} </div>
+                
+            </div>
+
+        
+            <div class = "center-qtext">
+                <div class = 'number-and-arrow'></div>
+                <div class= 'comment'> {{question.qComment | upper }} </div>
+            </div>
+        </div>
+        <div class = 'qarea'>
+            <div class='qarea-inner'>
+                {% include question.qView~'.html' %}
+            </div>
+        </div>
+        {% endif %}
+
+        <script type="text/javascript">
+
+            var content_lenght = ($(".content").css("height").substr(0, lenght = ($(".content").css("height").length - 2)));
+            var qtext_lenght = ($(".qtext").css("height").substr(0, lenght = ($(".qtext").css("height").length - 2)));
+            var height = content_lenght - qtext_lenght;
+            $(".qarea").css("height", height);
+
+
+        </script>
+
+{% endblock %}
+
+
+
+{% block footer %}
+    {% if question.qView == 'start' or question.qView == 'last' %}
+    {% else %}
+        <div class = 'menueArea'>
+            
+            <div class = 'menueAreaItem center-item'> 
+                <span class = 'center-item-text'> % заполнено </span>
+                <div class = 'status-bar'>  </div>
+            </div>
+            
+        </div>
+    {% endif %}
+{% endblock %}
