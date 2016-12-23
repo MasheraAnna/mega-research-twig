@@ -33,10 +33,9 @@ class __TwigTemplate_9ef6828dd92ab9b9ab3436830d457559ce59ca304dd7c3beb3d175da332
 \t    </div>
 \t    <div class = 'middleScreen'>
 \t    \t<div class = 'startButton-container'>
-
-\t\t        <form action='process.php?qId=";
-        // line 9
-        echo twig_escape_filter($this->env, $this->getAttribute((isset($context["question"]) ? $context["question"] : null), "id", array()), "html", null, true);
+\t\t        <form action='process.php?qIndex=";
+        // line 8
+        echo twig_escape_filter($this->env, $this->getAttribute((isset($context["question"]) ? $context["question"] : null), "qIndex", array()), "html", null, true);
         echo "' method='post'>
 \t\t        \t<input type = 'hidden' name =\"0\" id =\"0\" value = 'start'>
 \t\t        \t<button name = \"next\" id = \"next\" type= \"submit\" value = \"next\" class = \"startButton\"> Начать </button>
@@ -56,7 +55,7 @@ class __TwigTemplate_9ef6828dd92ab9b9ab3436830d457559ce59ca304dd7c3beb3d175da332
 
     public function getDebugInfo()
     {
-        return array (  39 => 9,  31 => 4,  27 => 2,  20 => 1,);
+        return array (  38 => 8,  31 => 4,  27 => 2,  20 => 1,);
     }
 }
 /* 	{% block content %}*/
@@ -66,8 +65,7 @@ class __TwigTemplate_9ef6828dd92ab9b9ab3436830d457559ce59ca304dd7c3beb3d175da332
 /* 	    </div>*/
 /* 	    <div class = 'middleScreen'>*/
 /* 	    	<div class = 'startButton-container'>*/
-/* */
-/* 		        <form action='process.php?qId={{question.id}}' method='post'>*/
+/* 		        <form action='process.php?qIndex={{question.qIndex}}' method='post'>*/
 /* 		        	<input type = 'hidden' name ="0" id ="0" value = 'start'>*/
 /* 		        	<button name = "next" id = "next" type= "submit" value = "next" class = "startButton"> Начать </button>*/
 /* 		        </form>*/

@@ -5,8 +5,7 @@
 	    </div>
 	    <div class = 'middleScreen'>
 	    	<div class = 'startButton-container'>
-
-		        <form action='process.php?qId={{question.id}}' method='post'>
+		        <form action='process.php?qIndex={{question.qIndex}}' method='post'>
 		        	<input type = 'hidden' name ="0" id ="0" value = 'start'>
 		        	<button name = "next" id = "next" type= "submit" value = "next" class = "startButton"> Начать </button>
 		        </form>

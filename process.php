@@ -4,9 +4,14 @@ include "class/Question.php";
 
 $question = new Question(HOST, USER, PASSWORD, DB);
 
-$CurrentQId = filter_input (INPUT_GET, 'qId', FILTER_SANITIZE_NUMBER_INT);
+$CurrentQId = filter_input (INPUT_GET, 'qIndex', FILTER_SANITIZE_NUMBER_INT);
 $next = filter_input(INPUT_POST, 'next', FILTER_SANITIZE_EMAIL);
 $prev = filter_input (INPUT_POST, 'prev', FILTER_SANITIZE_EMAIL);
+
+echo ("<br>");
+echo ($question->id);
+echo ("<br>");
+echo ($question->qIndex);
 
 if ($next){
 
@@ -22,7 +27,7 @@ if ($next){
     $nextQId = 1;
 }
 
-header("Location:question$nextQId");
+// header("Location:question$nextQId");
 die();
 ?>
 
