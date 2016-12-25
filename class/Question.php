@@ -37,7 +37,7 @@ class Question {
         // в зависимости от них определяем, какой вопрос задать респонденту
         
         $testQIndex = filter_input (INPUT_GET, 'qIndex', FILTER_SANITIZE_NUMBER_INT);
-        
+        echo($testQIndex); 
         if ($testQIndex && $this->respId){
 
             $this->getLastQuestionAsked();
@@ -51,7 +51,7 @@ class Question {
 
                 $qIndex = $testQIndex;
                 $this->question["qIndex"]= $testQIndex;
-                $this->question["id_test"] = getQid($qIndex);
+                $this->question["id_test"] = $this->getQid($qIndex);
                 
             } else {
                 echo ("hey4");
@@ -61,31 +61,32 @@ class Question {
                 $nextQIndex = $this->ifAskThisQ($qIndex);
                 $qIndex = $nextQIndex;
                 $this->question["qIndex"]= $nextQIndex;
-                $this->question["id_test"] = getQid($qIndex);
+                $this->question["id_test"] = $this->getQid($qIndex);
             }
         } else if ($testQIndex && !$this->respId){
         
             echo ("hey3");
             $qIndex = 1;
             $this->question["qIndex"] = 1;
-            $this->question["id_test"] = getQid($this->question["qIndex"]);
+            $this->question["id_test"] = $this->getQid($this->question["qIndex"]);
         
         } else if ($this->respId) {
 
             echo ("hey2");
+            // вот эта функция должна возвращать qIndex а не qId
             $this->getLastQuestionAsked();
             // проверь, можем ли мы задать этот вопрос!
             $testQIndex = $this->lastQuestionAsked+1;
             $qIndex = $this->ifAskThisQ($testQIndex);
             $this->question["qIndex"]=$qIndex;
-            $this->question["id_test"] = getQid($this->question["qIndex"]);
+            $this->question["id_test"] = $this->getQid($this->question["qIndex"]);
         
         } else {
         
             echo ("hey1");
             $qIndex = 1;
             $this->question["qIndex"]= 1; 
-            $this->question["id_test"] = getQid($this->question["qIndex"]);
+            $this->question["id_test"] = $this->getQid($this->question["qIndex"]);
         
         }
 
@@ -155,7 +156,7 @@ class Question {
                 $queryToCheck = " SELECT answers.qId, qconditions.conditionType, qconditions.relatedAId, qconditions.equals, data.aId, data.answer FROM `qconditions` 
                 INNER JOIN `data` ON qconditions.relatedAId = data.aId AND qconditions.equals = data.answer
                 INNER JOIN `answers` ON answers.id = data.aId 
-                INNER JOIN `questions` ON questions.id = qconditions.qId
+                INNER JOIN `questions` ON questions.id_test = qconditions.qId
                 WHERE data.respId = '$respId' AND questions.qIndex = '$nextQIndex' ";
 
                 $checkResult = mysqli_query($this->connection, $queryToCheck);
@@ -172,11 +173,20 @@ class Question {
                 $showQuestion = true;
             }
         }
-        return $nextQuestion;
+        
+
+        $queryQid = "SELECT * FROM `questions` WHERE `qIndex` = '$nextQuestion' ";
+        $resultQid = mysqli_query($this->connection, $queryQid);
+        $rowQid = mysqli_fetch_assoc($resultQid);
+        $this->question["id_test"] = $rowQid['id_test'];
+        return $nextQuestion;   
     }
     
+
+
     // эта функци получает id предыдущего вопроса
     public function getPrevQId ($lastAskedQuestion) {
+    
     $prevQuestion = mysqli_real_escape_string($this->connection, $lastAskedQuestion) - 1;
         
         // Проверим, есть ли у него условие и выполняется ли оно:
@@ -187,14 +197,17 @@ class Question {
             $nextQ = mysqli_real_escape_string($this->connection, $prevQuestion);
             $respId = mysqli_real_escape_string($this->connection, $this->respId);
             
-            $queryConditionExists = "SELECT * FROM `qconditions` WHERE `qId` = $nextQ";
+            $queryConditionExists = "SELECT * FROM `qconditions` 
+                                    INNER JOIN `questions` ON qconditions.qId = questions.id_test
+                                    WHERE questions.qIndex = '$nextQ' ";
             $resultConditionExists = mysqli_query($this->connection, $queryConditionExists);
             
             if (mysqli_num_rows($resultConditionExists)){
 
                 $queryToCheck = "SELECT * FROM `qconditions`
                             INNER JOIN `data` ON  qconditions.relatedAId  = data.aId AND qconditions.equals = data.answer
-                            WHERE qconditions.qId = '$nextQ' AND data.respId = '$respId'";
+                            INNER JOIN `questions` ON qconditions.qId = questions.id_test
+                            WHERE questions.qIndex = '$nextQ' AND data.respId = '$respId'";
 
                 $checkResult = mysqli_query($this->connection, $queryToCheck);
 
@@ -231,7 +244,10 @@ class Question {
     
     // эта функция получает из базы варианты ответа для текущего вопроса
     private function fetchVariantes (){
-        $qId = mysqli_real_escape_string($this->connection,$this->id);
+
+        $qId = mysqli_real_escape_string($this->connection,$this->question["id_test"]);
+         
+
         // пойди в базу, проверь, есть ли у вариантов этого вопроса условие.
         $queryForVariantes = "SELECT answers.id, answers.answer_text, answers.answerIndex FROM `answers` 
                         INNER JOIN `aconditions` ON answers.id = aconditions.aId 
@@ -272,7 +288,7 @@ class Question {
 
 
         } else {
-            $qId = mysqli_real_escape_string($this->connection,$this->id);
+            $qId = mysqli_real_escape_string($this->connection,$this->question["id_test"]);
             $queryForVariantes = "SELECT answers.id, answers.answer_text, answers.answerIndex FROM `answers` WHERE answers.qId = '$qId'";
             $resultVariantes = mysqli_query($this->connection, $queryForVariantes);
             while ($row = mysqli_fetch_assoc($resultVariantes)){
@@ -342,7 +358,9 @@ class Question {
         
     // эта функция ставит респонденту id и cookie, если их не было до этого
     private function setRespIdAndCookie(){    
+        
         if (!$this->respId){
+
             $startDate = date(DATE_RFC2822);
             $startDate = mysqli_real_escape_string($this->connection, $startDate);
             $query = "INSERT INTO `respondents` (`respId`,`startTime`) VALUES (UUID(),'$startDate')";
@@ -369,15 +387,19 @@ class Question {
         
         // проверяем, был ли текущий вопрос условием для других вопросов и изменились ли по нему данные.
         // если да, то удаляем все данные из следующих вопросов
-        $this->ifThisQuestionDataChanged();
+        
+        // $this->ifThisQuestionDataChanged();
         
         
-        $qId = mysqli_real_escape_string ($this->connection, $this->id);
+        $qIndex = mysqli_real_escape_string ($this->connection, $this->qIndex);
         $respId = mysqli_real_escape_string($this->connection, $this->respId);        
         
         // Проверяем, есть ли текущий вопрос уже в базе, если да - удаляем его
 
-        $query = "SELECT data.id FROM `data` INNER JOIN `answers` on data.aId = answers.id WHERE answers.qId = '$qId' AND data.respId = '$respId'";
+        $query = "SELECT data.id FROM `data` 
+                INNER JOIN `answers` on data.aId = answers.id
+                INNER JOIN `questions` on answers.qId = questions.id_test 
+                WHERE questions.qIndex = '$qIndex' AND data.respId = '$respId'";
         $result = mysqli_query ($this->connection, $query);
 
         if ($this->qData){
@@ -392,6 +414,7 @@ class Question {
         // кстати, нужно все массивы post тоже обработать, чтобы не обращаться к ним непосредственно.
         // вопрос - как тут экранировать символы? у меня же массив? filter_input не применяется к массиву
 
+
         if (isset ($_POST['name'])){
             foreach ($_POST['name'] as $key => $value){
                 $query = "INSERT INTO `data` (`respId`,`aId`,`answer`)"
@@ -399,6 +422,7 @@ class Question {
                 $result = mysqli_query($this->connection, $query);
             }
         } else {
+
             foreach ($_POST as $key => $value) {
                 $query = "INSERT INTO `data` (`respId`,`aId`,`answer`) VALUES ('$respId','$key','$value')";                
                 $result = mysqli_query($this->connection, $query);
@@ -412,7 +436,9 @@ class Question {
         
         $respId = mysqli_real_escape_string($this->connection, $this->respId);
 
-        $query = "SELECT `qId` FROM `ANSWERS` INNER JOIN `data` ON data.aId = answers.id WHERE data.respId = '$respId' ORDER BY `qId`";
+        $query = "SELECT `qIndex` FROM `questions`
+        INNER JOIN `ANSWERS` ON  questions.id_test = answers.qId
+        INNER JOIN `data` ON data.aId = answers.id WHERE data.respId = '$respId' ORDER BY `qIndex` ";
         // вот тут нужно обратиться параллельно в таблицу answers и вытащить оттуда qId
 
         $result = mysqli_query ($this->connection, $query);
@@ -422,7 +448,7 @@ class Question {
         // сложим все полученные записи в массив $askedQestionsArray
             while ($row = mysqli_fetch_assoc($result)){
                 
-                $askedQestionsArray[]=$row['qId'];
+                $askedQestionsArray[]=$row['qIndex'];
             }
             // определим, какой вопрос был задан последним, для этого сортируем массив по убыванию
             $maxKey = max(array_keys($askedQestionsArray));
