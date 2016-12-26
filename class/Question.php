@@ -21,9 +21,7 @@ class Question {
     private $lastQuestionAsked;
     public  $name = array();
     
-    // todo:
-    // 2) почему-то он позволяет до 7го вопроса пройти не заполняя ничего, а дальше идет только, если
-    // я что-нибудь заполню - разобраться почему - это как-то связано с новыми условиями в конструкторе
+    
     
     public function __construct($dbhost, $dbuser, $dbpassword, $dbname){
         $this->connection = mysqli_connect($dbhost, $dbuser, $dbpassword, $dbname);
@@ -37,7 +35,7 @@ class Question {
         // в зависимости от них определяем, какой вопрос задать респонденту
         
         $testQIndex = filter_input (INPUT_GET, 'qIndex', FILTER_SANITIZE_NUMBER_INT);
-        echo($testQIndex); 
+         
         if ($testQIndex && $this->respId){
 
             $this->getLastQuestionAsked();
@@ -328,9 +326,11 @@ class Question {
     // эта функция получает данные по текущему вопросу из базы, если они уже есть
     public function getThisQData (){
         $respId = mysqli_real_escape_string ($this->connection, $this->respId);
-        $qId = mysqli_real_escape_string ($this->connection, $this->id);
+        $qId = mysqli_real_escape_string ($this->connection, $this->question["id_test"]);
         
-        $getDataQuery = "SELECT * FROM `data` INNER JOIN `answers` ON data.aId = answers.id WHERE data.respId = '$respId' AND answers.qId = '$qId'";
+        $getDataQuery = "SELECT * FROM `data` 
+                        INNER JOIN `answers` ON data.aId = answers.id 
+                        WHERE data.respId = '$respId' AND answers.qId = '$qId'";
         
         $getDataResult = mysqli_query ($this->connection, $getDataQuery);
         while($dataRow = mysqli_fetch_assoc($getDataResult)){
@@ -388,9 +388,9 @@ class Question {
         // проверяем, был ли текущий вопрос условием для других вопросов и изменились ли по нему данные.
         // если да, то удаляем все данные из следующих вопросов
         
-        // $this->ifThisQuestionDataChanged();
+        $this->ifThisQuestionDataChanged();
         
-        
+        $qId = mysqli_real_escape_string ($this->connection, $this->question["id_test"]);
         $qIndex = mysqli_real_escape_string ($this->connection, $this->qIndex);
         $respId = mysqli_real_escape_string($this->connection, $this->respId);        
         
@@ -398,14 +398,16 @@ class Question {
 
         $query = "SELECT data.id FROM `data` 
                 INNER JOIN `answers` on data.aId = answers.id
-                INNER JOIN `questions` on answers.qId = questions.id_test 
-                WHERE questions.qIndex = '$qIndex' AND data.respId = '$respId'";
+                WHERE answers.qId = '$qId' AND data.respId = '$respId'";
         $result = mysqli_query ($this->connection, $query);
-
+        
+        
         if ($this->qData){
+
             while ($row = mysqli_fetch_assoc($result)){
                 // удаление из базы
                 $stringId = mysqli_real_escape_string($this->connection, $row["id"]);
+                
                 $queryToDelete = "DELETE FROM `data` WHERE `data`.`id` = $stringId";
                 $deleteResult = mysqli_query($this->connection, $queryToDelete);
             }
@@ -463,12 +465,13 @@ class Question {
     private function ifThisQuestionDataChanged(){
         
         $respId = mysqli_real_escape_string ($this->connection, $this->respId);
-        $qIdToCheck = mysqli_real_escape_string ($this->connection, $this->id);
-
+        $qIdToCheck = mysqli_real_escape_string ($this->connection, $this->question["id_test"]);
+        echo ($qIdToCheck);
         // пойди в базу проверь, зависят ли от этого вопроса другие:
-        $queryQConditionSet = "SELECT * FROM `qconditions` INNER JOIN `answers` ON qconditions.relatedAId = answers.id  WHERE answers.qId ='$qIdToCheck'";
+        $queryQConditionSet = " SELECT * FROM `qconditions` 
+                    INNER JOIN `answers` ON qconditions.relatedAId = answers.id 
+                    WHERE answers.qId ='$qIdToCheck'";
         
-
         $resultQConditionSet = mysqli_query($this->connection, $queryQConditionSet);
 
         // если да, проверь, изменились ли данные по нему
@@ -488,12 +491,17 @@ class Question {
             }
             
             $diff1 = array_diff_assoc ($arrayPost, $this->qData);
+            print_r ($this->qData);
             $diff2 = array_diff_assoc ($this->qData, $arrayPost);
-            
+            print_r ($arrayPost);
             // если данные изменились, удали все, что идет после этого вопроса:
             if (count($diff1) > 0 or count($diff2) > 0){
-                $queryFindQToDelete = "DELETE FROM `data` WHERE `respId` = '$respId' AND `qId` > '$qIdToCheck' ";
+                echo ($respId);
+                $queryFindQToDelete = "DELETE data.* FROM `data`
+                            INNER JOIN `answers` on data.aId = answers.id 
+                            WHERE data.respId = '$respId' AND answers.qId > '$qIdToCheck' ";
                 $connectionFindQ = mysqli_query($this->connection, $queryFindQToDelete);
+
             }
         }
     }
