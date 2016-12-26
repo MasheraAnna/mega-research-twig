@@ -256,7 +256,7 @@ class Question {
         if (mysqli_num_rows($resultVariantes)){
             
             $respId = mysqli_real_escape_string($this->connection, $this->respId);
-            $qId = mysqli_real_escape_string($this->connection,$this->id);
+            $qId = mysqli_real_escape_string($this->connection,$this->question["id_test"]);
 
             // выбираем те варианты, у которых есть условие и оно выполняется
             $queryForVConditions = "SELECT aconditions.aId, answers.answer_text, answers.answerIndex FROM `aconditions` 
@@ -309,13 +309,18 @@ class Question {
     // эта функция получает из базы шкалы для ответов для текущего вопроса
     // здесь тоже нужно заменить на ид!!!!!!!!!!!!!!!!!!!!!!!!
     private function fetchScale (){
-        $qId = mysqli_real_escape_string($this->connection, $this->id);
-        $query = "SELECT * FROM `scales` WHERE `qId`='$qId'";
+
+        $qId = mysqli_real_escape_string($this->connection, $this->question["id_test"]);
+        echo ($qId);
+        $query = " SELECT * FROM `scales` WHERE `qId`='$qId' ";
         $queryResult = mysqli_query($this->connection, $query);
+        print_r($queryResult);
         while ($row = mysqli_fetch_assoc($queryResult)){
             $currentScale[$row['scaleIndex']] = $row['scaleText'];
         }
+
         if (isset($currentScale)){
+
             $this->scale = $currentScale;
             return true;
         } else {

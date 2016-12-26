@@ -19,7 +19,7 @@ class __TwigTemplate_e55374992b5a8e6adb6163a5578b028cc0bb439ea8c5ef4af676f2475ff
         echo "<form action='process.php?qIndex=";
         echo twig_escape_filter($this->env, $this->getAttribute((isset($context["question"]) ? $context["question"] : null), "qIndex", array()), "html", null, true);
         echo "' method='post'>
-    
+
     <table border=\"1\">
         <tr>
             <td></td>
@@ -119,7 +119,7 @@ class __TwigTemplate_e55374992b5a8e6adb6163a5578b028cc0bb439ea8c5ef4af676f2475ff
     }
 }
 /* <form action='process.php?qIndex={{question.qIndex}}' method='post'>*/
-/*     */
+/* */
 /*     <table border="1">*/
 /*         <tr>*/
 /*             <td></td>*/
