@@ -41,7 +41,7 @@ class Question {
             $this->getLastQuestionAsked();
             
             if ($testQIndex == ($this->lastQuestionAsked+1) or $testQIndex < ($this->lastQuestionAsked+1)){
-                echo ("hey5"."<br>");
+                
                 // считай, что следующим задаем вопрос, который получили из GET
                 // сходи в базу, проверь, можем ли мы показать этот вопрос.
 
@@ -52,7 +52,7 @@ class Question {
                 $this->question["id_test"] = $this->getQid($qIndex);
                 
             } else {
-                echo ("hey4");
+                
                 // считаем, что следующим задаем вопрос, который идет следующим в базе по порядку
                 $qIndex = $this->lastQuestionAsked+1;
                 // сходи в базу, проверь, можем ли мы задать этот вопрос в соответствии с условиями
@@ -63,14 +63,12 @@ class Question {
             }
         } else if ($testQIndex && !$this->respId){
         
-            echo ("hey3");
             $qIndex = 1;
             $this->question["qIndex"] = 1;
             $this->question["id_test"] = $this->getQid($this->question["qIndex"]);
         
         } else if ($this->respId) {
 
-            echo ("hey2");
             // вот эта функция должна возвращать qIndex а не qId
             $this->getLastQuestionAsked();
             // проверь, можем ли мы задать этот вопрос!
@@ -80,8 +78,7 @@ class Question {
             $this->question["id_test"] = $this->getQid($this->question["qIndex"]);
         
         } else {
-        
-            echo ("hey1");
+
             $qIndex = 1;
             $this->question["qIndex"]= 1; 
             $this->question["id_test"] = $this->getQid($this->question["qIndex"]);
@@ -311,10 +308,8 @@ class Question {
     private function fetchScale (){
 
         $qId = mysqli_real_escape_string($this->connection, $this->question["id_test"]);
-        echo ($qId);
         $query = " SELECT * FROM `scales` WHERE `qId`='$qId' ";
         $queryResult = mysqli_query($this->connection, $query);
-        print_r($queryResult);
         while ($row = mysqli_fetch_assoc($queryResult)){
             $currentScale[$row['scaleIndex']] = $row['scaleText'];
         }
@@ -471,7 +466,6 @@ class Question {
         
         $respId = mysqli_real_escape_string ($this->connection, $this->respId);
         $qIdToCheck = mysqli_real_escape_string ($this->connection, $this->question["id_test"]);
-        echo ($qIdToCheck);
         // пойди в базу проверь, зависят ли от этого вопроса другие:
         $queryQConditionSet = " SELECT * FROM `qconditions` 
                     INNER JOIN `answers` ON qconditions.relatedAId = answers.id 
@@ -496,9 +490,7 @@ class Question {
             }
             
             $diff1 = array_diff_assoc ($arrayPost, $this->qData);
-            print_r ($this->qData);
             $diff2 = array_diff_assoc ($this->qData, $arrayPost);
-            print_r ($arrayPost);
             // если данные изменились, удали все, что идет после этого вопроса:
             if (count($diff1) > 0 or count($diff2) > 0){
                 echo ($respId);

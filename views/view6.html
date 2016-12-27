@@ -3,7 +3,7 @@
     {% for key, variant in variantes %}
         <div>
             <div class='q1'>
-                {{variant}}
+                {{variant['answer_text']}}
             </div>
             <input name ="{{key}}" id ="{{key}}" type='text'
                    {% if qData[key]%} value = '{{qData[key]}}' {% endif %}>
