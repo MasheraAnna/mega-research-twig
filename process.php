@@ -23,8 +23,7 @@ if ($next){
     $nextQIndex = 1;
 }
 
-
-//header("Location:question$nextQIndex");
+header("Location:question$nextQIndex");
 die();
 ?>
 
